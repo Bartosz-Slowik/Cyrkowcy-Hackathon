@@ -3,7 +3,7 @@ from gcsa.google_calendar import GoogleCalendar
 from gcsa.recurrence import Recurrence, DAILY, SU, SA
 
 from beautiful_date import Jan, Apr
-#gc = GoogleCalendar(credentials_path='../googleAPI/.credentials/credentials.json')
+gc = GoogleCalendar(credentials_path='googleAPI\.credentials\credentials.json')
 
 calendar = GoogleCalendar('ritit.server@gmail.com')
 
