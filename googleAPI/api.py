@@ -5,7 +5,15 @@ from gcsa.recurrence import Recurrence, DAILY, SU, SA
 from beautiful_date import Jan, Apr
 gc = GoogleCalendar(credentials_path='googleAPI\.credentials\credentials.json')
 
-calendar = GoogleCalendar('ritit.server@gmail.com')
+#calendar = GoogleCalendar('ritit.server@gmail.com')
+
+class MyEvent:
+    def __init__(self, name, desc, attendees, length):
+        self.name = name
+        self.desc = desc
+        self.attendees = attendees
+        self.length = length
+    
 
 event = Event(
     'Breakfast',
@@ -23,7 +31,7 @@ event = Event(
 
 #calendar.add_event(event)
 
-for event in calendar:
+for event in gc:
     print(event.start)
     print(event.end)
     print(event.summary)
