@@ -2,7 +2,11 @@ from typing import List, Set
 import datetime
 
 class MyEvent:
-    def __init__(self , name, desc, attendees: Set[str], length):
+
+    def __init__(self,event, name, desc, attendees: Set[str], length):
+        self.event = event
+        self.timeStart = event.start
+
         self.name = name
         self.desc = desc
         self.attendees = attendees
