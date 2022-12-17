@@ -15,6 +15,8 @@ class MyEvent:
         for attendee in self.attendees:
             s += "  " + attendee + " "
         return s
+    def __lt__(self, other):
+         return self.timeStart < other.timeStart
 
 
 class Concurrent:
@@ -163,11 +165,12 @@ if __name__ == "__main__":
     e8 = MyEvent("event 8", "ecvev", ("szym", "eustach"), 45)
     e9 = MyEvent("event 9", "ecvev", ("lukasz", "eustach", "szym"), 30)
     e10 = MyEvent("event 10", "ecvev", ("hub", "edward", "szym"), 45)
-    testList = [e1, e2, e3, e4, e5, e6, e7, e8]
+    testList = [e1, e2, e3, e4, e5, e6, e7, e8, e9, e10]
     scheduler = Scheduler(testList)
     scheduler.generateConcurrent()
     print("----------")
     events = scheduler.generateSchedule()
+    events.sort()
     for event in events:
         print(event.name, event.timeStart.time(), event.timeEnd.time())
     #scheduler.printt()
