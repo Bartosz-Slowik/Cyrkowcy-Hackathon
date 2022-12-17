@@ -8,7 +8,7 @@ import datetime
 #tommorow date
 tommorow = datetime.date.today() + datetime.timedelta(days=1)
 #list of employees
-employees = ['ritit.server@gmail.com', 'rititek@gmail.com', 'bartosz.slowik2000@gmail.com']
+employees = ['rititek@gmail.com','ritit.server@gmail.com', 'bartosz.slowik2000@gmail.com']
 
 #dicionary of calendars from every employee
 calendars={}
@@ -31,18 +31,21 @@ for gc in calendars.values():
             else:
                 for attendee in event.attendees:
                     temp.append(attendee.email)
-            events[event.event_id] = MyEvent(event , event.id, event.description, temp, (event.end-event.start))
+            diff_in_minutes = (event.end-event.start).total_seconds() / 60
+            events[event.event_id] = MyEvent(event , event.id, event.description, temp, diff_in_minutes)
 mylist = events.values()
 scheduler = Scheduler(list(mylist))
 scheduler.generateConcurrent()
-scheduler.generateSchedule()
-results = scheduler.getEvents()
+results = scheduler.generateSchedule()
+
 
 
 for result in results:
+    print(result.timeStart)
     newEvent = result.baseEvent
-    newEvent.summary = "JAJO"
-
+    newEvent.summary = "ZMIENIONE"
+    newEvent.start = result.timeStart
+    newEvent.end = result.timeEnd
     curgc = calendars[result.baseEvent.creator.email]
     curgc.update_event(newEvent)
     print("LOL")

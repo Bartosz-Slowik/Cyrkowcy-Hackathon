@@ -35,3 +35,4 @@ for gc in calendars.values():
             event.start =  "(18/Dec/2022)[20:00]"
             event.end = "(18/Dec/2022)[21:00]"
             gc.update_event(event)
+           ## print(event.id)
