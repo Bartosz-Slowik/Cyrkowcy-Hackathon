@@ -3,8 +3,10 @@ from gcsa.google_calendar import GoogleCalendar
 from gcsa.recurrence import Recurrence, DAILY, SU, SA
 
 from beautiful_date import Jan, Apr
-from schedule import MyEvent, TimeFrame, attendeesOverlaps, fitEvent, scheduleEvents
-
+from schedule import MyEvent, Scheduler
+import datetime
+#tommorow date
+tommorow = datetime.date.today() + datetime.timedelta(days=1)
 #list of employees
 employees = ['ritit.server@gmail.com', 'rititek@gmail.com', 'bartosz.slowik2000@gmail.com']
 
@@ -22,20 +24,32 @@ for employee in employees:
 events = {}
 for gc in calendars.values():
     for event in gc:
-        temp=[]
-        if event.attendees==[]:
-            temp.append(event.creator.email)
-        else:
-            for attendee in event.attendees:
-                temp.append(attendee.email)
-        events[event.event_id] = MyEvent(event , event.summary, event.description, temp, event.end-event.start)
+        if event.start.date() == tommorow:
+            temp=[]
+            if event.attendees==[]:
+                temp.append(event.creator.email)
+            else:
+                for attendee in event.attendees:
+                    temp.append(attendee.email)
+            events[event.event_id] = MyEvent(event , event.id, event.description, temp, (event.end-event.start))
 mylist = events.values()
-results = scheduleEvents(mylist)
+scheduler = Scheduler(list(mylist))
+scheduler.generateConcurrent()
+scheduler.generateSchedule()
+results = scheduler.getEvents()
+
+
 for result in results:
-    result.event.start = result.timeStart
-    result.event.end = result.timeStart + result.length
-    calendars[result.event.creator.email].modify_event(result.event)
+    newEvent = result.baseEvent
+    newEvent.summary = "JAJO"
+
+    curgc = calendars[result.baseEvent.creator.email]
+    curgc.update_event(newEvent)
+    print("LOL")
 
 
-
-
+def cretebeatiful(y,m,d,h,min):
+    res = "("
+    res+=str(d)+"/"+str(m)+"/"+str(y)+")"
+    res+="["+str(h)+":"+str(min)+"]"
+    return res

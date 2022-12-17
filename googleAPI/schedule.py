@@ -1,16 +1,15 @@
 from typing import List, Set
-import datetime
+import datetime as dt
 
 class MyEvent:
 
     def __init__(self,event, name, desc, attendees: Set[str], length):
-        self.event = event
-        self.timeStart = event.start
-
+        self.baseEvent = event
         self.name = name
         self.desc = desc
         self.attendees = attendees
-        self.timeStart = 0
+        self.timeStart = ""
+        self.timeEnd = ""
         self.length = length
     def __str__(self) -> str:
         s = self.name + " (" + str(self.length) + ")\n"
@@ -114,9 +113,12 @@ class Scheduler:
     def getEvents(self):
         lista = []
         hour = 7
+        tommorow = dt.date.today() + dt.timedelta(days=1)
+
         for concurrency in self.allSchedules[0].concurrents:
             for event in concurrency.events:
-                event.timeStart = datetime.time(hour, 0, 0)
+                event.timeStart = dt.datetime(tommorow.year, tommorow.month, tommorow.day, hour, 0),
+                event.timeEnd = dt.datetime(tommorow.year, tommorow.month, tommorow.day, hour+1, 0),
                 lista.append(event)
             hour += 1
         print(len(lista))
