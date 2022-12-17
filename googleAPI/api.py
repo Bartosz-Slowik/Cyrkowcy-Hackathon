@@ -29,6 +29,16 @@ event = Event(
     minutes_before_email_reminder=50
 )
 
+events = []
+myEvents = []
+
+dicti = {}
+for event in events:
+    if event.id in dicti:
+        continue
+    myEvent = MyEvent(event.name.....)
+    myEvents.append(myEvent)
+
 #calendar.add_event(event)
 
 for event in gc:

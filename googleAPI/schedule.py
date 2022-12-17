@@ -4,9 +4,11 @@ import datetime
 class MyEvent:
     def __init__(self , name, desc, attendees: Set[str], length):
         self.name = name
+        #self.event = event
         self.desc = desc
         self.attendees = attendees
         self.timeStart = 0
+        self.timeEnd = 0
         self.length = length
     def __str__(self) -> str:
         s = self.name + " (" + str(self.length) + ")\n"
@@ -47,37 +49,75 @@ class Concurrent:
             count += len(event.attendees)
         return count
 
-    
-class Schedule:
-    def __init__(self) -> None:
-        self.concurrents = []
-        self.events = []
+    def haveEvents(self, events):
+        for event in events:
+            if not event in self.events:
+                return False
+        return True
 
-    def __init__(self, concurrents: List[Concurrent]) -> None:
-        self.concurrents = concurrents
-        self.events = []
-        for concurrent in concurrents:
-            for event in concurrent.events:
-                self.events.append(event)
-        
-    def fitConcurent(self, concurrent: Concurrent) -> bool:
-        for event in concurrent.events:
+    def notHaveEvents(self, events):
+        for event in events:
             if event in self.events:
                 return False
-        self.events += concurrent.events
-        self.concurrents.append(concurrent)
         return True
-    
-    def getLength(self):
-        return len(self.concurrents)
-    
+        
 
+    
+class Schedule:
+    def __init__(self, concurrents: List[Concurrent], eventsCount) -> None:
+        self.remaining = list(concurrents)
+        self.remaining.sort(reverse=True)
+        self.concurrents = []
+        self.events = set()
+        self.eventsCount = eventsCount
+
+    def addConcurent(self, concurrent, time):
+        for event in concurrent.events:
+            event.timeStart = time
+            event.timeEnd = event.timeStart + datetime.timedelta(minutes=event.length)
+            self.events.add(event)
+        self.concurrents.append(concurrent)
+        self.remaining.remove(concurrent)
+        
+    def getEventsNow(self, timeNow):
+        events = []
+        for event in self.events:
+            if event.timeStart.time() < timeNow.time() and timeNow.time() < event.timeEnd.time():
+                events.append(event)
+        return events
+
+    def getEventsEnded(self, timeNow):
+        events = []
+        for event in self.events:
+            if timeNow.time() >= event.timeEnd.time():
+                events.append(event)
+        return events
+
+    def fitNow(self, timeNow):
+        events = self.getEventsNow(timeNow)
+        ended = self.getEventsEnded(timeNow)
+        canFit = []
+        for concurrent in self.remaining:
+            if concurrent.haveEvents(events) and concurrent.notHaveEvents(ended) and concurrent not in self.concurrents:
+                canFit.append(concurrent)
+                break
+        if len(canFit) > 0:
+            self.addConcurent(canFit[0], timeNow)
+
+    def isFull(self):
+        return len(self.events) >= self.eventsCount
+
+    def print(self):
+        for event in events:
+            print(event.startTime)
+            
+        
+    
 
 class Scheduler:
     def __init__(self, events: List[MyEvent]) -> None:
         self.events = events
         self.allConcurrences = set()
-        self.allSchedules = []
         self.eventCount = len(events)
 
     def _recursiveFindConcurrent(self, previous: List[MyEvent], remaning: List[MyEvent]):
@@ -94,69 +134,42 @@ class Scheduler:
         self._recursiveFindConcurrent([], self.events)
         print(len(self.allConcurrences))
 
-    def isFullSchedule(self, schedule: Schedule) -> bool:
-        return len(schedule.events) >= self.eventCount
-
     def generateSchedule(self):
-        self.allConcurrences = list(self.allConcurrences)
-        self.allConcurrences.sort(reverse=True)
-        schedule = Schedule([])
-        for concurrent in self.allConcurrences:
-            schedule.fitConcurent(concurrent)
-            if self.isFullSchedule(schedule):
-                break
-        self.allSchedules.append(schedule)
-
-    def getEvents(self):
-        lista = []
+        schedule = Schedule(self.allConcurrences, self.eventCount)        
         hour = 7
-        for concurrency in self.allSchedules[0].concurrents:
-            for event in concurrency.events:
-                event.timeStart = datetime.time(hour, 0, 0)
-                lista.append(event)
-            hour += 1
-        print(len(lista))
+        minute = 0
+        while(True):
+            schedule.fitNow(datetime.datetime(100, 1, 1, hour, minute, 0))
+            if schedule.isFull():
+                break
+            minute += 1
+            if minute==60:
+                minute=0
+                hour+=1
+        lista = []
+        for event in schedule.events:
+            lista.append(event)
         return lista
 
-    def print1(self):
-        for concurrent in self.allConcurrences:
-            print("Concurrent: ", end="")
-            for event in concurrent.events:
-                print(event.name, end=" ")
-            print()
-
-
-    def printt(self):
-        for schedule in self.allSchedules:
-            print("Schedule: +++++++++++++++++++++++++++++++++++++")
-            for concurrent in schedule.concurrents:
-                print("Concurrent: ", end="")
-                for event in concurrent.events:
-                    print(event.name, end=" ")
-                print()
-            print(schedule.getLength())
-            print("End:      +++++++++++++++++++++++++++++++++++++")
 
 if __name__ == "__main__":
-    e1 = MyEvent("event 1", "ecvev", ("adr", "bart"), 1)
-    e2 = MyEvent("event 2", "ecvev", ("adr", "szym"), 1)
-    e3 = MyEvent("event 3", "ecvev", ("hub", "wac", "adr"), 1)
-    e4 = MyEvent("event 4", "ecvev", ("edward", "wac"), 1)
-    e5 = MyEvent("event 5", "ecvev", ("lukasz", "wac", "hubert"), 1)
-    e6 = MyEvent("event 6", "ecvev", ("szym", "eustach", "edward"), 1)
-    e7 = MyEvent("event 7", "ecvev", ("szym", "wac"), 1)
-    e8 = MyEvent("event 8", "ecvev", ("szym", "eustach"), 1)
-    e9 = MyEvent("event 9", "ecvev", ("lukasz", "eustach", "szym"), 1)
-    e10 = MyEvent("event 10", "ecvev", ("hub", "edward", "szym"), 1)
+    e1 = MyEvent("event 1", "ecvev", ("adr", "bart"), 60)
+    e2 = MyEvent("event 2", "ecvev", ("adr", "szym"), 30)
+    e3 = MyEvent("event 3", "ecvev", ("hub", "wac", "adr"), 30)
+    e4 = MyEvent("event 4", "ecvev", ("edward", "wac"), 90)
+    e5 = MyEvent("event 5", "ecvev", ("lukasz", "wac", "hubert"), 60)
+    e6 = MyEvent("event 6", "ecvev", ("szym", "eustach", "edward"), 15)
+    e7 = MyEvent("event 7", "ecvev", ("szym", "wac"), 30)
+    e8 = MyEvent("event 8", "ecvev", ("szym", "eustach"), 45)
+    e9 = MyEvent("event 9", "ecvev", ("lukasz", "eustach", "szym"), 30)
+    e10 = MyEvent("event 10", "ecvev", ("hub", "edward", "szym"), 45)
     testList = [e1, e2, e3, e4, e5, e6, e7, e8]
     scheduler = Scheduler(testList)
     scheduler.generateConcurrent()
     print("----------")
-    scheduler.generateSchedule()
-
-    events = scheduler.getEvents()
+    events = scheduler.generateSchedule()
     for event in events:
-        print(event.timeStart)
+        print(event.name, event.timeStart.time(), event.timeEnd.time())
     #scheduler.printt()
 
 
